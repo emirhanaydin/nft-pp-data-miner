@@ -1,11 +1,9 @@
-import math
-
 from matplotlib import pyplot as plt
 
 from plot_metrics import PlotMetrics
 
 
-def show_rmse_graph(plot_metrics: list[PlotMetrics]):
+def show_rmse_graph(plot_metrics: list[PlotMetrics], margin_ratio=0.99):
     name_list: list[str] = []
     rmse_list: list[float] = []
 
@@ -13,10 +11,10 @@ def show_rmse_graph(plot_metrics: list[PlotMetrics]):
         name_list.append(pm.plot_name)
         rmse_list.append(pm.metrics.rmse)
 
-    ylim = [
-        math.floor(min(rmse_list)),
-        math.ceil(max(rmse_list)),
-    ]
+    min_val = min(rmse_list)
+    max_val = max(rmse_list)
+
+    ylim = [min_val * margin_ratio, max_val * (2 - margin_ratio)]
 
     plt.bar(name_list, rmse_list, color='blue')
     plt.ylim(ylim)
