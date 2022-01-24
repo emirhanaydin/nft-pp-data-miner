@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from numpy.typing import ArrayLike
 
 
-class Model(ABC):
+class RegressionModel(ABC):
     @abstractmethod
     def learn(self, x_train: ArrayLike, y_train: ArrayLike):
         pass

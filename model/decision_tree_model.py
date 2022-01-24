@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 from numpy.typing import ArrayLike
 from sklearn.tree import DecisionTreeRegressor
 
-from model import Model
+from .regression_model import RegressionModel
 
 
-class DecisionTreeModel(Model):
+class DecisionTreeModel(RegressionModel):
     def __init__(self, max_depth: int = None):
         self._max_depth = max_depth
-        self._tree_regressor: type(DecisionTreeRegressor) = None
+        self._tree_regressor: DecisionTreeRegressor | None = None
 
     def learn(self, x_train: ArrayLike, y_train: ArrayLike):
         max_depth = self._max_depth

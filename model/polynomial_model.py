@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from model import Model
+from .regression_model import RegressionModel
 
 
-class PolynomialModel(Model):
+class PolynomialModel(RegressionModel):
     def __init__(self, degree: int = 2):
         self._degree = degree
-        self._poly: type(PolynomialFeatures) = None
-        self._lin_regressor: type(LinearRegression) = None
+        self._poly: PolynomialFeatures | None = None
+        self._lin_regressor: LinearRegression | None = None
 
     def learn(self, x_train: ArrayLike, y_train: ArrayLike):
         degree = self._degree

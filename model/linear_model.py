@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 from numpy.typing import ArrayLike
 from sklearn.linear_model import LinearRegression
 
-from model import Model
+from .regression_model import RegressionModel
 
 
-class LinearModel(Model):
+class LinearModel(RegressionModel):
     def __init__(self):
-        self._lin_regressor: type(LinearRegression) = None
+        self._lin_regressor: LinearRegression | None = None
 
     def learn(self, x_train: ArrayLike, y_train: ArrayLike):
         lin_regressor = LinearRegression()

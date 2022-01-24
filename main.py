@@ -1,19 +1,37 @@
 import pandas as pd
 
 from cross_validator import CrossValidator
-from decision_tree_model import DecisionTreeModel
-from linear_model import LinearModel
+from df_filter import (
+    cat_to_num_filter,
+    column_filter,
+    DataFrameFilter,
+    empty_filter,
+    unique_filter,
+    correlation_filter,
+)
+from line_plot import line_plot
 from mean_filter import mean_filter
+from metrics import Metrics
+from model import (
+    DecisionTreeModel,
+    LinearModel,
+    PolynomialModel,
+)
 from plot_metrics import PlotMetrics
-from polynomial_model import PolynomialModel
 from show_rmse_graph import show_rmse_graph
-from show_test_pred_graph import show_test_pred_graph
 
 
 def main():
-    dataset = pd.read_csv('data.csv').dropna(subset=['Front'])
-    x = dataset.iloc[:, 7:8].values
-    y = dataset.iloc[:, 11].values
+    dataset = DataFrameFilter(pd.read_csv('data.csv')) \
+        .pipe(empty_filter) \
+        .pipe(unique_filter) \
+        .pipe(column_filter) \
+        .pipe(cat_to_num_filter) \
+        .pipe(correlation_filter) \
+        .filter()
+
+    x = dataset.iloc[:, dataset.columns != 'Price'].values
+    y = dataset['Price'].values
     y = mean_filter(y)
 
     validator = CrossValidator(x, y)
@@ -31,12 +49,20 @@ def main():
     iter_range = range(len(model_titles))
 
     # Show RMSE graph
-    plot_metrics = [PlotMetrics(model_titles[i], results[i].metrics) for i in iter_range]
+    plot_metrics = [PlotMetrics(model_titles[i], Metrics.from_test_pred(y, results[i].prediction)) for i in iter_range]
     show_rmse_graph(plot_metrics)
 
     # Show test - prediction graph
-    for i in iter_range:
-        show_test_pred_graph(results[i].best_test_pred, model_titles[i])
+    max_rows = 200
+    idxes = [i for i, v in enumerate(y) if v < 0.5]
+    idxes = idxes[:max_rows]
+    x_plot = pd.Series(data=idxes, name='id')
+    y_plot = [pd.Series(data=results[i].prediction[idxes], name=model_titles[i]) for i in iter_range]
+    y_plot.insert(0, pd.Series(data=y[idxes], name='Price'))
+    color_data = ['#56b4e9', '#e69f00', '#cc79a7', '#009e73']
+    color_data = [pd.Series(data=[color_data[i]], name=y_plot[i].name) for i in range(len(y_plot))]
+
+    line_plot(x_plot, y_plot, color_data)
 
 
 if __name__ == '__main__':

@@ -4,20 +4,13 @@ from numpy.typing import ArrayLike
 from sklearn.model_selection import KFold
 
 from metrics import Metrics
-from model import Model
-
-
-@dataclass
-class TestPredictionResult:
-    x_test: ArrayLike
-    prediction: ArrayLike
+from model import RegressionModel
 
 
 @dataclass
 class CrossValidationResult:
-    best_test_pred: TestPredictionResult
-    metrics: Metrics
-    test_predictions: list[TestPredictionResult]
+    prediction: ArrayLike
+    metrics: list[Metrics]
 
 
 class CrossValidator:
@@ -27,14 +20,15 @@ class CrossValidator:
 
     def predict(
             self,
-            model: Model,
+            model: RegressionModel,
             n_splits=10,
     ) -> CrossValidationResult:
         x = self._x
         y = self._y
         metrics = Metrics.max_error()
-        best_test_pred: TestPredictionResult
-        test_predictions: list[TestPredictionResult] = []
+        all_metrics = []
+        train_result_index: ArrayLike
+        test_result_index: ArrayLike
 
         kf = KFold(n_splits=n_splits)
         for train_index, test_index in kf.split(x):
@@ -46,11 +40,14 @@ class CrossValidator:
             y_pred = model.predict(x_test)
 
             m = Metrics.from_test_pred(y_test, y_pred)
+            all_metrics.append(m)
+
             if m.rmse < metrics.rmse:
                 metrics = m
-                best_test_pred = TestPredictionResult(x_test, y_pred)
-
-            test_predictions.append(TestPredictionResult(x_test, y_pred))
+                train_result_index = train_index
 
         # noinspection PyUnboundLocalVariable
-        return CrossValidationResult(best_test_pred, metrics, test_predictions)
+        model.learn(x[train_result_index], y[train_result_index])
+        prediction = model.predict(x)
+
+        return CrossValidationResult(prediction, all_metrics)

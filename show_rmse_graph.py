@@ -16,7 +16,7 @@ def show_rmse_graph(plot_metrics: list[PlotMetrics], margin_ratio=0.99):
 
     ylim = [min_val * margin_ratio, max_val * (2 - margin_ratio)]
 
-    plt.bar(name_list, rmse_list, color='blue')
+    plt.bar(name_list, rmse_list, color='#5395c3')
     plt.ylim(ylim)
     plt.title('Root Mean Squared Error')
     plt.xlabel('Model')
